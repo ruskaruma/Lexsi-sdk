@@ -695,6 +695,8 @@ class TabularProject(Project):
                 },
                 "instance_type": compute_type
             }
+            if config.get("model_name"):
+                payload["metadata"]["model_name"] = config.get("model_name")
             if model_config:
                 payload["metadata"]["model_parameters"] = model_config
             if tunning_config:
