@@ -822,8 +822,10 @@ class TextProject(Project):
         original example.
         """
         payload = {"guardrails": guardrails, "input_data": input_data}
-        response = self.api_client.post(GUARDRAILS_RUN, payload=payload)
-        return response
+        res = self.api_client.post(GUARDRAILS_RUN, payload=payload)
+        if not res["success"]:
+            raise Exception(res["details"])
+        return dict(res["data"])
     
     def apply_guardrail_to_models(
         self,
@@ -843,8 +845,10 @@ class TextProject(Project):
             "retry" : retry,
             "retry_attempts" : retry_attempts
         }
-        response = self.api_client.post(GUARDRAILS_APPLY_TO_MODEL, payload=payload)
-        return response
+        res = self.api_client.post(GUARDRAILS_APPLY_TO_MODEL, payload=payload)
+        if not res["success"]:
+            raise Exception(res["details"])
+        return dict(res["details"])
 
 class CaseText(BaseModel):
     """Explainability view for text-based cases. Supports token-level importance, attention visualization, and LLM output analysis."""

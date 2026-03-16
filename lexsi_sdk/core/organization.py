@@ -588,8 +588,10 @@ class Organization(BaseModel):
             "is_async" : is_async,
             "block" : block
         }
-        response = self.api_client.post(GUARDRAILS_CREATE, payload=payload)
-        return response
+        res = self.api_client.post(GUARDRAILS_CREATE, payload=payload)
+        if not res["success"]:
+            raise Exception(res.get("details", "Failed to create guardrails"))
+        return dict(res["details"])
 
 
     def edit_guardrail(
@@ -613,33 +615,42 @@ class Organization(BaseModel):
             payload["is_async"] = is_async
         if block is not None:
             payload["block"] = block
-        response = self.api_client.put(GUARDRAILS_EDIT, payload=payload)
-        return response
+        res = self.api_client.put(GUARDRAILS_EDIT, payload=payload)
+        if not res["success"]:
+            raise Exception(res.get("details", "Failed to edit guardrails"))
+        
+        return dict(res["details"])
 
 
     def get_guardrail(self , group_id: str) -> httpx.Response:
         """Retrieve details of a specific organization guardrail."""
         response = self.api_client.get(f"{GUARDRAILS_GET}/{group_id}?organization_id={self.organization_id}")
         data = response
+        if not response["success"]:
+            raise Exception(response.get("details", "Failed to get guardrails"))
         try:
             if data["details"]["guardrail"]:
                 return pd.DataFrame(data["details"]["guardrail"])
         except:
-            return data
+            return dict(data["details"])
         # return pd.DataFrame(data["details"]["guardrail"])
 
     def list_guardrails(self) -> httpx.Response:
         """List all guardrails for an organization."""
         response = self.api_client.get(f"{GUARDRAILS_LIST}?organization_id={self.organization_id}")
         data = response
+        if not response["success"]:
+            raise Exception(response.get("details", "Failed to list guardrails"))
         try:
             if data["details"]["guardrails"]:
                 return pd.DataFrame(data["details"]["guardrails"])
         except:
-            return data
+            return dict(data["details"])
 
     def delete_guardrail(self , group_id: str) -> httpx.Response:
         """Soft‑delete a guardrail (marks it as `is_deleted=true`)."""
         print(GUARDRAILS_DELETE)
         response = self.api_client.delete(f"{GUARDRAILS_DELETE}/{group_id}?organization_id={self.organization_id}")
-        return response
+        if not response["success"]:
+            raise Exception(response.get("details", "Failed to delete guardrails"))
+        return str(response["details"])
